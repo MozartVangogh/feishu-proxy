@@ -21,9 +21,19 @@ app.all('/api/proxy', async (req, res) => {
   const target = req.query.url;
   if (!target) return res.status(400).send('missing url');
   try {
+    // 把客户端传来的所有请求头都转发给目标
+    const forwardHeaders = {};
+    Object.keys(req.headers).forEach(function(k){
+      if(k === 'host' || k === 'connection' || k === 'content-length') return;
+      forwardHeaders[k] = req.headers[k];
+    });
+    if(!forwardHeaders['content-type']){
+      forwardHeaders['content-type'] = 'application/json; charset=utf-8';
+    }
+
     const fetchOpts = {
       method: req.method,
-      headers: { 'Content-Type': 'application/json; charset=utf-8' }
+      headers: forwardHeaders
     };
     if (req.method !== 'GET' && req.method !== 'HEAD' && req.body && Object.keys(req.body).length) {
       fetchOpts.body = JSON.stringify(req.body);
@@ -36,6 +46,7 @@ app.all('/api/proxy', async (req, res) => {
   }
 });
 
+// 健康检查
 app.get('/', (req, res) => res.send('feishu-proxy is running'));
 
 app.listen(PORT, () => {
