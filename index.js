@@ -14,10 +14,9 @@ app.use((req, res, next) => {
   next();
 });
 
-// 解析 JSON body
 app.use(express.json());
 
-// 代理入口：/api/proxy?url=<目标URL>
+// 代理入口
 app.all('/api/proxy', async (req, res) => {
   const target = req.query.url;
   if (!target) return res.status(400).send('missing url');
@@ -37,7 +36,6 @@ app.all('/api/proxy', async (req, res) => {
   }
 });
 
-// 健康检查
 app.get('/', (req, res) => res.send('feishu-proxy is running'));
 
 app.listen(PORT, () => {
